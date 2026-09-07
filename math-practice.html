@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Math Practice</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 30px;
+      font-size: 16px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      gap: 15px;
+    }
+
+    .progress-badge {
+      font-size: 18px;
+      font-weight: bold;
+      color: #667eea;
+      background: #f0f4ff;
+      padding: 8px 16px;
+      border-radius: 20px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      border: none;
+      background: #e8e8e8;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: #667eea;
+      color: white;
+    }
+
+    .tab-btn:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    /* Practice Screen */
+    .problem-display {
+      background: #f9f9f9;
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .problem-text {
+      font-size: 48px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .problem-question {
+      font-size: 24px;
+      color: #666;
+    }
+
+    .scratch-pad-container {
+      margin-bottom: 25px;
+    }
+
+    .scratch-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    #scratchCanvas {
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      display: block;
+      width: 100%;
+      height: 180px;
+      background: white;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .canvas-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .clear-canvas-btn {
+      padding: 6px 12px;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.2s;
+    }
+
+    .clear-canvas-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .input-section {
+      margin-bottom: 25px;
+    }
+
+    .input-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    #answerInput {
+      width: 100%;
+      padding: 16px;
+      font-size: 20px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+      transition: border-color 0.2s;
+    }
+
+    #answerInput:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .number-pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .number-pad button {
+      padding: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .number-pad button:hover {
+      background: #f5f5f5;
+      border-color: #667eea;
+    }
+
+    .number-pad button:active {
+      transform: scale(0.95);
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .pad-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .pad-actions button {
+      padding: 16px;
+      font-size: 16px;
+      font-weight: bold;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pad-actions button:hover {
+      background: #f5f5f5;
+      border-color: #667eea;
+    }
+
+    .pad-actions button:active {
+      transform: scale(0.95);
+    }
+
+    .check-answer-btn {
+      grid-column: 1 / -1;
+      background: #667eea !important;
+      color: white !important;
+      border-color: #667eea !important;
+      font-size: 18px !important;
+    }
+
+    .check-answer-btn:hover {
+      background: #5568d3 !important;
+      border-color: #5568d3 !important;
+    }
+
+    .feedback {
+      font-size: 20px;
+      font-weight: bold;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 20px;
+      display: none;
+      animation: fadeInOut 1s ease-in-out;
+    }
+
+    .feedback.correct {
+      background: #d4edda;
+      color: #155724;
+      display: block;
+    }
+
+    .feedback.incorrect {
+      background: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* End of Set Screen */
+    .end-screen {
+      text-align: center;
+    }
+
+    .end-screen h2 {
+      font-size: 36px;
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .end-screen .score {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .end-screen .message {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .end-screen button {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: bold;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .end-screen button:hover {
+      background: #5568d3;
+    }
+
+    /* Progress Screen */
+    .progress-content {
+      text-align: center;
+    }
+
+    .progress-content h2 {
+      font-size: 28px;
+      color: #667eea;
+      margin-bottom: 25px;
+    }
+
+    .progress-section {
+      margin-bottom: 25px;
+      text-align: left;
+    }
+
+    .progress-section h3 {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .progress-text {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .mult-grid {
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      gap: 2px;
+      margin-top: 10px;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .mult-grid-cell {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .mult-grid-cell.new {
+      background: #ccc;
+    }
+
+    .mult-grid-cell.learning {
+      background: #ffc107;
+    }
+
+    .mult-grid-cell.review {
+      background: #2196f3;
+    }
+
+    .mult-grid-cell.mastered {
+      background: #4caf50;
+    }
+
+    .mult-grid-cell.header {
+      background: white;
+      color: #333;
+      font-size: 8px;
+    }
+
+    .storage-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .storage-buttons button {
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: bold;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .storage-buttons button:hover {
+      background: #5568d3;
+    }
+
+    .status-message {
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .status-message.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="progress-badge" id="progressBadge">1 / 10</div>
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="practice">Practice</button>
+        <button class="tab-btn" data-tab="progress">Progress</button>
+      </div>
+    </div>
+
+    <!-- Practice Screen -->
+    <div class="screen active" id="practiceScreen">
+      <div class="feedback" id="feedback"></div>
+      
+      <div class="problem-display">
+        <div class="problem-text" id="problemText">7 + 8 = ?</div>
+      </div>
+
+      <div class="scratch-pad-container">
+        <label class="scratch-label">Scratch Pad (work it out)</label>
+        <canvas id="scratchCanvas"></canvas>
+        <div class="canvas-controls">
+          <button class="clear-canvas-btn" id="clearCanvasBtn">Clear</button>
+        </div>
+      </div>
+
+      <div class="input-section">
+        <label class="input-label">Your Answer</label>
+        <input type="tel" id="answerInput" inputmode="numeric" placeholder="Type or tap">
+      </div>
+
+      <div class="number-pad">
+        <button data-num="7">7</button>
+        <button data-num="8">8</button>
+        <button data-num="9">9</button>
+        <button data-num="4">4</button>
+        <button data-num="5">5</button>
+        <button data-num="6">6</button>
+        <button data-num="1">1</button>
+        <button data-num="2">2</button>
+        <button data-num="3">3</button>
+      </div>
+
+      <div class="pad-actions">
+        <button id="backspaceBtn">← Backspace</button>
+        <button id="clearBtn">Clear</button>
+        <button class="check-answer-btn" id="checkAnswerBtn">Check Answer</button>
+      </div>
+    </div>
+
+    <!-- End of Set Screen -->
+    <div class="screen" id="endScreen">
+      <div class="end-screen">
+        <h2>🎉 Great Job!</h2>
+        <div class="score" id="endScore">8 / 10</div>
+        <div class="message" id="endMessage">Come back tomorrow for more!</div>
+        <button id="restartBtn">Start Over</button>
+      </div>
+    </div>
+
+    <!-- Progress Screen -->
+    <div class="screen" id="progressScreen">
+      <div class="progress-content">
+        <h2>📊 Your Progress</h2>
+        
+        <div class="progress-section">
+          <h3>Addition</h3>
+          <div class="progress-text" id="progressAdd"></div>
+        </div>
+
+        <div class="progress-section">
+          <h3>Subtraction</h3>
+          <div class="progress-text" id="progressSub"></div>
+        </div>
+
+        <div class="progress-section">
+          <h3>Multiplication Tables</h3>
+          <div class="progress-text" id="progressMultText"></div>
+          <div class="mult-grid" id="multGrid"></div>
+        </div>
+
+        <div class="storage-buttons">
+          <button id="exportBtn">Export Data</button>
+          <button id="importBtn">Import Data</button>
+          <input type="file" id="importFile" style="display: none;" accept=".json">
+        </div>
+        <div class="status-message" id="statusMessage"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // STORAGE API WRAPPER
+    // ============================================================================
+    const storageAPI = {
+      get: async (key) => {
+        try {
+          const result = await window.storage?.get(key);
+          return result ? result.value : localStorage.getItem(key);
+        } catch {
+          return localStorage.getItem(key);
+        }
+      },
+      set: async (key, value) => {
+        try {
+          await window.storage?.set(key, value);
+        } catch {
+          localStorage.setItem(key, value);
+        }
+        localStorage.setItem(key, value);
+      },
+      delete: async (key) => {
+        try {
+          await window.storage?.delete(key);
+        } catch {
+          localStorage.removeItem(key);
+        }
+        localStorage.removeItem(key);
+      }
+    };
+
+    // ============================================================================
+    // MODULES - Problem generation and bucket definitions
+    // ============================================================================
+
+    const modules = {
+      addition: {
+        buckets: [
+          { key: 'add-2digit-noregroup', name: '2-digit (no regrouping)' },
+          { key: 'add-2digit-regroup', name: '2-digit (regrouping)' },
+          { key: 'add-3digit-regroup', name: '3-digit (regrouping)' }
+        ],
+        generate: (bucketKey) => {
+          const bucket = modules.addition.buckets.find(b => b.key === bucketKey);
+          if (!bucket) return null;
+
+          let a, b, attemptCount = 0;
+          const maxAttempts = 50;
+
+          while (attemptCount < maxAttempts) {
+            if (bucketKey === 'add-2digit-noregroup') {
+              a = Math.floor(Math.random() * 90) + 10;
+              b = Math.floor(Math.random() * 90) + 10;
+              const onesSum = (a % 10) + (b % 10);
+              const tensSum = Math.floor(a / 10) + Math.floor(b / 10);
+              if (onesSum <= 9 && tensSum <= 9) break;
+            } else if (bucketKey === 'add-2digit-regroup') {
+              a = Math.floor(Math.random() * 90) + 10;
+              b = Math.floor(Math.random() * 90) + 10;
+              if ((a % 10) + (b % 10) >= 10) break;
+            } else if (bucketKey === 'add-3digit-regroup') {
+              a = Math.floor(Math.random() * 900) + 100;
+              b = Math.random() > 0.5 ? Math.floor(Math.random() * 900) + 100 : Math.floor(Math.random() * 90) + 10;
+              let needsCarry = false;
+              for (let i = 0; i < 3; i++) {
+                if ((Math.floor(a / Math.pow(10, i)) % 10) + (Math.floor(b / Math.pow(10, i)) % 10) >= 10) {
+                  needsCarry = true;
+                  break;
+                }
+              }
+              if (needsCarry) break;
+            }
+            attemptCount++;
+          }
+
+          return `${a}+${b}`;
+        }
+      },
+      subtraction: {
+        buckets: [
+          { key: 'sub-2digit-noborrow', name: '2-digit (no borrowing)' },
+          { key: 'sub-2digit-borrow', name: '2-digit (borrowing)' },
+          { key: 'sub-3digit-borrow', name: '3-digit (borrowing)' }
+        ],
+        generate: (bucketKey) => {
+          const bucket = modules.subtraction.buckets.find(b => b.key === bucketKey);
+          if (!bucket) return null;
+
+          let a, b, attemptCount = 0;
+          const maxAttempts = 50;
+
+          while (attemptCount < maxAttempts) {
+            if (bucketKey === 'sub-2digit-noborrow') {
+              a = Math.floor(Math.random() * 90) + 10;
+              b = Math.floor(Math.random() * (a + 1));
+              if ((a % 10) >= (b % 10) && Math.floor(a / 10) >= Math.floor(b / 10)) break;
+            } else if (bucketKey === 'sub-2digit-borrow') {
+              a = Math.floor(Math.random() * 90) + 10;
+              b = Math.floor(Math.random() * a);
+              if ((a % 10) < (b % 10)) break;
+            } else if (bucketKey === 'sub-3digit-borrow') {
+              a = Math.floor(Math.random() * 900) + 100;
+              b = Math.floor(Math.random() * (a - 50)) + 1;
+              let needsBorrow = false;
+              for (let i = 0; i < 3; i++) {
+                if ((Math.floor(a / Math.pow(10, i)) % 10) < (Math.floor(b / Math.pow(10, i)) % 10)) {
+                  needsBorrow = true;
+                  break;
+                }
+              }
+              if (needsBorrow) break;
+            }
+            attemptCount++;
+          }
+
+          return `${a}-${b}`;
+        }
+      },
+      multiplication: {
+        tiers: [
+          { tables: [0, 1, 2, 10] },
+          { tables: [5, 3] },
+          { tables: [4, 6, 11] },
+          { tables: [7, 8, 9, 12] }
+        ],
+        generate: (table) => {
+          const other = Math.floor(Math.random() * 13);
+          const a = Math.min(table, other);
+          const b = Math.max(table, other);
+          return `${a}×${b}`;
+        }
+      }
+    };
+
+    // ============================================================================
+    // APPLICATION STATE
+    // ============================================================================
+
+    let appState = {
+      currentProblemIndex: 0,
+      dailySet: [],
+      todayAnswers: [],
+      currentFeedback: null,
+      screenMode: 'practice'
+    };
+
+    // ============================================================================
+    // INITIALIZATION
+    // ============================================================================
+
+    async function initializeApp() {
+      try {
+        const today = getTodayDateString();
+        const sessionKey = `session-${today}`;
+        let session = null;
+
+        try {
+          const stored = await storageAPI.get(sessionKey);
+          session = stored ? JSON.parse(stored) : null;
+        } catch {
+          session = null;
+        }
+
+        if (session && session.items.length > 0) {
+          appState.dailySet = session.items.map(i => i.problem);
+          appState.todayAnswers = session.items;
+          appState.currentProblemIndex = session.items.length;
+        } else {
+          await generateDailySet();
+          const newSession = { date: today, items: [] };
+          await storageAPI.set(sessionKey, JSON.stringify(newSession));
+        }
+
+        initializeMultFacts();
+        initializeAddSubBuckets();
+        updateUI();
+      } catch (e) {
+        console.error('Initialization error:', e);
+        showStatusMessage('Failed to initialize. Please refresh.');
+      }
+    }
+
+    async function generateDailySet() {
+      try {
+        const mult = await getMultiplicationFacts();
+        const add = await getAddSubBuckets();
+
+        const allBuckets = [...add].filter(b => b.key.startsWith('add-') || b.key.startsWith('sub-'));
+        const availableMult = mult.filter(f => !f.key.includes('locked'));
+        const availableTables = new Set();
+
+        mult.forEach(f => {
+          if (f.status !== 'new' && !f.key.includes('locked')) {
+            availableTables.add(Math.min(f.operandA, f.operandB));
+          }
+        });
+
+        appState.dailySet = [];
+        for (let i = 0; i < 10; i++) {
+          if (i % 2 === 0 && availableTables.size > 0 && Math.random() > 0.3) {
+            const tables = Array.from(availableTables);
+            const table = tables[Math.floor(Math.random() * tables.length)];
+            const problem = modules.multiplication.generate(table);
+            appState.dailySet.push(problem);
+          } else if (allBuckets.length > 0) {
+            const bucket = allBuckets[Math.floor(Math.random() * allBuckets.length)];
+            const problem = modules[bucket.operation].generate(bucket.key);
+            if (problem) appState.dailySet.push(problem);
+          }
+        }
+
+        if (appState.dailySet.length < 10) {
+          while (appState.dailySet.length < 10) {
+            const bucket = allBuckets[Math.floor(Math.random() * allBuckets.length)];
+            const problem = modules[bucket.operation].generate(bucket.key);
+            if (problem) appState.dailySet.push(problem);
+          }
+        }
+
+        appState.dailySet = appState.dailySet.slice(0, 10);
+      } catch (e) {
+        console.error('Error generating daily set:', e);
+      }
+    }
+
+    function initializeMultFacts() {
+      const tier1Tables = [0, 1, 2, 10];
+      const allFacts = [];
+      tier1Tables.forEach(table => {
+        for (let other = 0; other <= 12; other++) {
+          const a = Math.min(table, other);
+          const b = Math.max(table, other);
+          allFacts.push({
+            key: `${a}×${b}`,
+            operation: 'mul',
+            operandA: a,
+            operandB: b,
+            status: 'new',
+            correctStreak: 0,
+            lastSeenDate: null,
+            nextDueDate: getTodayDateString(),
+            timesCorrect: 0,
+            timesWrong: 0
+          });
+        }
+      });
+      localStorage.setItem('mult-facts-data', JSON.stringify(allFacts));
+    }
+
+    function initializeAddSubBuckets() {
+      const buckets = [];
+      [...modules.addition.buckets, ...modules.subtraction.buckets].forEach(b => {
+        const operation = b.key.startsWith('add-') ? 'add' : 'sub';
+        buckets.push({
+          key: b.key,
+          operation: operation,
+          status: 'new',
+          correctStreak: 0,
+          lastSeenDate: null,
+          nextDueDate: getTodayDateString(),
+          timesCorrect: 0,
+          timesWrong: 0,
+          recentProblems: []
+        });
+      });
+      localStorage.setItem('addsub-buckets-data', JSON.stringify(buckets));
+    }
+
+    async function getMultiplicationFacts() {
+      try {
+        const stored = await storageAPI.get('mult-facts-data');
+        if (stored) return JSON.parse(stored);
+      } catch (e) {
+        console.error('Error getting mult facts:', e);
+      }
+      initializeMultFacts();
+      return JSON.parse(localStorage.getItem('mult-facts-data'));
+    }
+
+    async function getAddSubBuckets() {
+      try {
+        const stored = await storageAPI.get('addsub-buckets-data');
+        if (stored) return JSON.parse(stored);
+      } catch (e) {
+        console.error('Error getting addsub buckets:', e);
+      }
+      initializeAddSubBuckets();
+      return JSON.parse(localStorage.getItem('addsub-buckets-data'));
+    }
+
+    // ============================================================================
+    // ANSWER EVALUATION & SCHEDULING
+    // ============================================================================
+
+    async function submitAnswer() {
+      if (appState.currentProblemIndex >= appState.dailySet.length) return;
+
+      const problem = appState.dailySet[appState.currentProblemIndex];
+      const userAnswer = document.getElementById('answerInput').value.trim();
+
+      if (!userAnswer) return;
+
+      const correct = await evaluateAnswer(problem, userAnswer);
+      await updateAnswerInSession(problem, userAnswer, correct);
+
+      showFeedback(correct, problem);
+      appState.currentFeedback = correct;
+
+      setTimeout(() => {
+        appState.currentFeedback = null;
+        document.getElementById('feedback').style.display = 'none';
+        advanceToNextProblem();
+      }, 1200);
+    }
+
+    async function evaluateAnswer(problem, answer) {
+      try {
+        const result = eval(problem.replace('×', '*'));
+        return parseInt(answer) === result;
+      } catch {
+        return false;
+      }
+    }
+
+    async function updateAnswerInSession(problem, answer, isCorrect) {
+      try {
+        const today = getTodayDateString();
+        const sessionKey = `session-${today}`;
+        let session = JSON.parse(await storageAPI.get(sessionKey) || '{}');
+
+        session.items = session.items || [];
+        session.items.push({
+          problem: problem,
+          userAnswer: answer,
+          correct: isCorrect,
+          timestamp: Date.now()
+        });
+
+        await storageAPI.set(sessionKey, JSON.stringify(session));
+        await updateFactOrBucketData(problem, isCorrect);
+      } catch (e) {
+        console.error('Error updating session:', e);
+      }
+    }
+
+    async function updateFactOrBucketData(problem, isCorrect) {
+      if (problem.includes('×')) {
+        const parts = problem.split('×');
+        const a = parseInt(parts[0]);
+        const b = parseInt(parts[1]);
+        const key = `${Math.min(a, b)}×${Math.max(a, b)}`;
+
+        let facts = JSON.parse(localStorage.getItem('mult-facts-data') || '[]');
+        const fact = facts.find(f => f.key === key);
+        if (fact) {
+          if (isCorrect) {
+            fact.correctStreak++;
+            fact.timesCorrect++;
+          } else {
+            fact.correctStreak = 0;
+            fact.timesWrong++;
+          }
+          fact.lastSeenDate = getTodayDateString();
+
+          if (fact.status === 'new' && fact.correctStreak >= 2) fact.status = 'learning';
+          if (fact.status === 'learning' && fact.correctStreak >= 3) fact.status = 'review';
+          if (fact.status === 'review' && fact.correctStreak >= 5) fact.status = 'mastered';
+
+          fact.nextDueDate = calculateNextDueDate(fact.status, fact.lastSeenDate);
+
+          await storageAPI.set('mult-facts-data', JSON.stringify(facts));
+        }
+      } else {
+        const parts = problem.includes('-') ? problem.split('-') : problem.split('+');
+        const op = problem.includes('-') ? 'sub' : 'add';
+        const bucketsData = JSON.parse(localStorage.getItem('addsub-buckets-data') || '[]');
+
+        for (const bucket of bucketsData) {
+          if (bucket.operation !== op) continue;
+
+          const generated = modules[op].generate(bucket.key);
+          if (generated === problem || isRandomProblemFromBucket(problem, bucket)) {
+            if (isCorrect) {
+              bucket.correctStreak++;
+              bucket.timesCorrect++;
+            } else {
+              bucket.correctStreak = 0;
+              bucket.timesWrong++;
+            }
+            bucket.lastSeenDate = getTodayDateString();
+
+            if (bucket.status === 'new' && bucket.correctStreak >= 2) bucket.status = 'learning';
+            if (bucket.status === 'learning' && bucket.correctStreak >= 3) bucket.status = 'review';
+            if (bucket.status === 'review' && bucket.correctStreak >= 5) bucket.status = 'mastered';
+
+            bucket.nextDueDate = calculateNextDueDate(bucket.status, bucket.lastSeenDate);
+
+            if (!bucket.recentProblems) bucket.recentProblems = [];
+            bucket.recentProblems.push(problem);
+            if (bucket.recentProblems.length > 10) bucket.recentProblems.shift();
+
+            break;
+          }
+        }
+
+        await storageAPI.set('addsub-buckets-data', JSON.stringify(bucketsData));
+      }
+    }
+
+    function isRandomProblemFromBucket(problem, bucket) {
+      if (!bucket.recentProblems) return false;
+      return bucket.recentProblems.includes(problem) || 
+             (bucket.recentProblems.length === 0 && bucket.status === 'new');
+    }
+
+    function calculateNextDueDate(status, lastSeen) {
+      const today = new Date(lastSeen);
+      let days = 1;
+      if (status === 'learning') days = 2;
+      if (status === 'review') days = 3;
+      if (status === 'mastered') days = 7;
+      const next = new Date(today);
+      next.setDate(next.getDate() + days);
+      return next.toISOString().split('T')[0];
+    }
+
+    // ============================================================================
+    // UI UPDATES
+    // ============================================================================
+
+    function advanceToNextProblem() {
+      appState.currentProblemIndex++;
+      clearCanvas();
+
+      if (appState.currentProblemIndex >= appState.dailySet.length) {
+        const correct = appState.todayAnswers.filter(a => a.correct).length;
+        showEndOfSetScreen(correct, appState.dailySet.length);
+      } else {
+        updateUI();
+      }
+    }
+
+    function showFeedback(isCorrect, problem) {
+      const fb = document.getElementById('feedback');
+      fb.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
+      if (isCorrect) {
+        fb.textContent = '✓ Correct!';
+      } else {
+        const result = eval(problem.replace('×', '*'));
+        fb.textContent = `✗ Incorrect. Answer: ${result}`;
+      }
+      fb.style.display = 'block';
+    }
+
+    function showEndOfSetScreen(correct, total) {
+      switchScreen('end');
+      document.getElementById('endScore').textContent = `${correct} / ${total}`;
+      if (correct === total) {
+        document.getElementById('endMessage').textContent = 'Perfect score! 🌟';
+      } else if (correct >= total * 0.8) {
+        document.getElementById('endMessage').textContent = 'Great job! Come back tomorrow.';
+      } else {
+        document.getElementById('endMessage').textContent = 'Keep practicing! Come back tomorrow.';
+      }
+    }
+
+    function updateUI() {
+      if (appState.currentProblemIndex >= appState.dailySet.length) return;
+
+      const problem = appState.dailySet[appState.currentProblemIndex];
+      document.getElementById('problemText').textContent = problem.replace('×', ' × ') + ' = ?';
+      document.getElementById('progressBadge').textContent = `${appState.currentProblemIndex + 1} / ${appState.dailySet.length}`;
+      document.getElementById('answerInput').value = '';
+      document.getElementById('feedback').style.display = 'none';
+    }
+
+    function switchScreen(mode) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(mode === 'practice' ? 'practiceScreen' : mode === 'end' ? 'endScreen' : 'progressScreen').classList.add('active');
+      appState.screenMode = mode;
+
+      if (mode === 'progress') {
+        updateProgressView();
+      }
+    }
+
+    async function updateProgressView() {
+      const mult = JSON.parse(localStorage.getItem('mult-facts-data') || '[]');
+      const addsub = JSON.parse(localStorage.getItem('addsub-buckets-data') || '[]');
+
+      const add = addsub.filter(b => b.operation === 'add');
+      const sub = addsub.filter(b => b.operation === 'sub');
+
+      const countMastered = (arr) => arr.filter(x => x.status === 'mastered').length;
+
+      document.getElementById('progressAdd').textContent = `Mastered: ${countMastered(add)} / 3 buckets`;
+      document.getElementById('progressSub').textContent = `Mastered: ${countMastered(sub)} / 3 buckets`;
+      document.getElementById('progressMultText').textContent = `Mastered: ${countMastered(mult)} facts`;
+
+      // Build multiplication grid
+      const grid = document.getElementById('multGrid');
+      grid.innerHTML = '';
+      for (let i = 0; i <= 12; i++) {
+        for (let j = 0; j <= 12; j++) {
+          const cell = document.createElement('div');
+          cell.className = 'mult-grid-cell header';
+          if (i === 0 && j === 0) {
+            cell.textContent = '×';
+          } else if (i === 0) {
+            cell.textContent = j;
+          } else if (j === 0) {
+            cell.textContent = i;
+          } else {
+            const key = `${Math.min(i, j)}×${Math.max(i, j)}`;
+            const fact = mult.find(f => f.key === key);
+            cell.className = `mult-grid-cell ${fact ? fact.status : 'new'}`;
+            cell.textContent = fact ? (fact.status[0].toUpperCase()) : '';
+          }
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    // ============================================================================
+    // CANVAS / SCRATCH PAD
+    // ============================================================================
+
+    let isDrawing = false;
+    let canvas, ctx;
+
+    function initializeCanvas() {
+      canvas = document.getElementById('scratchCanvas');
+      ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+      canvas.addEventListener('pointerdown', (e) => {
+        isDrawing = true;
+        const rect = canvas.getBoundingClientRect();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+      });
+
+      canvas.addEventListener('pointerup', () => {
+        isDrawing = false;
+      });
+
+      canvas.addEventListener('pointerleave', () => {
+        isDrawing = false;
+      });
+
+      document.getElementById('clearCanvasBtn').addEventListener('click', clearCanvas);
+    }
+
+    function clearCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+    }
+
+    // ============================================================================
+    // EVENT LISTENERS
+    // ============================================================================
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeCanvas();
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          switchScreen(e.target.dataset.tab);
+        });
+      });
+
+      document.querySelectorAll('.number-pad button[data-num]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const input = document.getElementById('answerInput');
+          input.value += e.target.dataset.num;
+          input.focus();
+        });
+      });
+
+      document.getElementById('backspaceBtn').addEventListener('click', () => {
+        const input = document.getElementById('answerInput');
+        input.value = input.value.slice(0, -1);
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        document.getElementById('answerInput').value = '';
+      });
+
+      document.getElementById('checkAnswerBtn').addEventListener('click', submitAnswer);
+      document.getElementById('answerInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submitAnswer();
+      });
+
+      document.getElementById('restartBtn').addEventListener('click', async () => {
+        appState.currentProblemIndex = 0;
+        appState.todayAnswers = [];
+        const today = getTodayDateString();
+        const sessionKey = `session-${today}`;
+        await storageAPI.set(sessionKey, JSON.stringify({ date: today, items: [] }));
+        await generateDailySet();
+        switchScreen('practice');
+        updateUI();
+      });
+
+      document.getElementById('exportBtn').addEventListener('click', exportData);
+      document.getElementById('importBtn').addEventListener('click', () => {
+        document.getElementById('importFile').click();
+      });
+
+      document.getElementById('importFile').addEventListener('change', importData);
+
+      initializeApp();
+    });
+
+    // ============================================================================
+    // DATA EXPORT / IMPORT
+    // ============================================================================
+
+    function exportData() {
+      const data = {
+        timestamp: new Date().toISOString(),
+        multFacts: JSON.parse(localStorage.getItem('mult-facts-data') || '[]'),
+        addsubBuckets: JSON.parse(localStorage.getItem('addsub-buckets-data') || '[]'),
+        moduleState: JSON.parse(localStorage.getItem('module-state') || '{}')
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `math-practice-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showStatusMessage('Data exported successfully!');
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result);
+          if (data.multFacts) localStorage.setItem('mult-facts-data', JSON.stringify(data.multFacts));
+          if (data.addsubBuckets) localStorage.setItem('addsub-buckets-data', JSON.stringify(data.addsubBuckets));
+          if (data.moduleState) localStorage.setItem('module-state', JSON.stringify(data.moduleState));
+          showStatusMessage('Data imported successfully! Page will reload.');
+          setTimeout(() => location.reload(), 1500);
+        } catch (err) {
+          showStatusMessage('Failed to import data. Invalid file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function showStatusMessage(msg) {
+      const el = document.getElementById('statusMessage');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    // ============================================================================
+    // UTILITY
+    // ============================================================================
+
+    function getTodayDateString() {
+      return new Date().toISOString().split('T')[0];
+    }
+  </script>
+</body>
+</html>
