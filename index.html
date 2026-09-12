@@ -11,6 +11,11 @@
       padding: 0;
     }
 
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -98,59 +103,15 @@
       font-family: 'Courier New', monospace;
     }
 
-    .problem-question {
-      font-size: 24px;
-      color: #666;
-    }
-
-    .scratch-pad-container {
-      margin-bottom: 25px;
-    }
-
-    .scratch-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #999;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    #scratchCanvas {
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      display: block;
-      width: 100%;
-      height: 180px;
-      background: white;
-      cursor: crosshair;
-      touch-action: none;
-    }
-
-    .canvas-controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 8px;
-    }
-
-    .clear-canvas-btn {
-      padding: 6px 12px;
-      background: #f0f0f0;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      color: #666;
-      transition: all 0.2s;
-    }
-
-    .clear-canvas-btn:hover {
-      background: #e0e0e0;
-    }
-
     .input-section {
       margin-bottom: 25px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
     }
 
     .input-label {
@@ -178,73 +139,39 @@
       border-color: #667eea;
     }
 
-    .number-pad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 15px;
-    }
-
-    .number-pad button {
-      padding: 16px;
+    .scratch-pad-btn {
+      padding: 16px 20px;
+      background: #f5f5f5;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
       font-size: 18px;
       font-weight: bold;
-      border: 2px solid #ddd;
-      background: white;
-      border-radius: 8px;
-      cursor: pointer;
       transition: all 0.2s;
+      white-space: nowrap;
     }
 
-    .number-pad button:hover {
-      background: #f5f5f5;
+    .scratch-pad-btn:hover {
+      background: #e8e8e8;
       border-color: #667eea;
-    }
-
-    .number-pad button:active {
-      transform: scale(0.95);
-      background: #667eea;
-      color: white;
-      border-color: #667eea;
-    }
-
-    .pad-actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-
-    .pad-actions button {
-      padding: 16px;
-      font-size: 16px;
-      font-weight: bold;
-      border: 2px solid #ddd;
-      background: white;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .pad-actions button:hover {
-      background: #f5f5f5;
-      border-color: #667eea;
-    }
-
-    .pad-actions button:active {
-      transform: scale(0.95);
     }
 
     .check-answer-btn {
-      grid-column: 1 / -1;
-      background: #667eea !important;
-      color: white !important;
-      border-color: #667eea !important;
-      font-size: 18px !important;
+      width: 100%;
+      padding: 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 15px;
     }
 
     .check-answer-btn:hover {
-      background: #5568d3 !important;
-      border-color: #5568d3 !important;
+      background: #5568d3;
     }
 
     .feedback {
@@ -275,6 +202,95 @@
       10% { opacity: 1; }
       90% { opacity: 1; }
       100% { opacity: 0; }
+    }
+
+    /* Full-Screen Scratch Pad Overlay */
+    .scratch-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: white;
+      z-index: 9999;
+      flex-direction: column;
+    }
+
+    .scratch-overlay.active {
+      display: flex;
+    }
+
+    .scratch-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: #f5f5f5;
+      border-bottom: 1px solid #ddd;
+      flex-shrink: 0;
+      height: 55px;
+    }
+
+    .scratch-topbar h3 {
+      font-size: 18px;
+      color: #333;
+      margin: 0;
+    }
+
+    .scratch-button-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .scratch-btn {
+      padding: 8px 16px;
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.2s;
+    }
+
+    .scratch-btn:hover {
+      background: #f0f0f0;
+      border-color: #667eea;
+    }
+
+    .scratch-close-btn {
+      padding: 8px 12px;
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #999;
+      transition: all 0.2s;
+    }
+
+    .scratch-close-btn:hover {
+      background: #f0f0f0;
+      border-color: #667eea;
+      color: #333;
+    }
+
+    .scratch-canvas-container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    #scratchCanvas {
+      flex: 1;
+      display: block;
+      background: white;
+      cursor: crosshair;
+      touch-action: none;
+      width: 100%;
+      height: 100%;
     }
 
     /* End of Set Screen */
@@ -446,36 +462,15 @@
         <div class="problem-text" id="problemText">7 + 8 = ?</div>
       </div>
 
-      <div class="scratch-pad-container">
-        <label class="scratch-label">Scratch Pad (work it out)</label>
-        <canvas id="scratchCanvas"></canvas>
-        <div class="canvas-controls">
-          <button class="clear-canvas-btn" id="clearCanvasBtn">Clear</button>
-        </div>
-      </div>
-
       <div class="input-section">
-        <label class="input-label">Your Answer</label>
-        <input type="tel" id="answerInput" inputmode="numeric" placeholder="Type or tap">
+        <div class="input-wrapper">
+          <label class="input-label">Your Answer</label>
+          <input type="tel" id="answerInput" inputmode="numeric" placeholder="Type here">
+        </div>
+        <button class="scratch-pad-btn" id="openScratchBtn">✏️ Scratch</button>
       </div>
 
-      <div class="number-pad">
-        <button data-num="7">7</button>
-        <button data-num="8">8</button>
-        <button data-num="9">9</button>
-        <button data-num="4">4</button>
-        <button data-num="5">5</button>
-        <button data-num="6">6</button>
-        <button data-num="1">1</button>
-        <button data-num="2">2</button>
-        <button data-num="3">3</button>
-      </div>
-
-      <div class="pad-actions">
-        <button id="backspaceBtn">← Backspace</button>
-        <button id="clearBtn">Clear</button>
-        <button class="check-answer-btn" id="checkAnswerBtn">Check Answer</button>
-      </div>
+      <button class="check-answer-btn" id="checkAnswerBtn">Check Answer</button>
     </div>
 
     <!-- End of Set Screen -->
@@ -516,6 +511,20 @@
         </div>
         <div class="status-message" id="statusMessage"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Full-Screen Scratch Pad Overlay -->
+  <div class="scratch-overlay" id="scratchOverlay">
+    <div class="scratch-topbar">
+      <h3>Scratch Pad</h3>
+      <div class="scratch-button-group">
+        <button class="scratch-btn" id="clearCanvasBtn">Clear</button>
+        <button class="scratch-close-btn" id="closeScratchBtn">✕</button>
+      </div>
+    </div>
+    <div class="scratch-canvas-container">
+      <canvas id="scratchCanvas"></canvas>
     </div>
   </div>
 
@@ -892,9 +901,8 @@
           await storageAPI.set('mult-facts-data', JSON.stringify(facts));
         }
       } else {
-        const parts = problem.includes('-') ? problem.split('-') : problem.split('+');
-        const op = problem.includes('-') ? 'sub' : 'add';
         const bucketsData = JSON.parse(localStorage.getItem('addsub-buckets-data') || '[]');
+        const op = problem.includes('-') ? 'sub' : 'add';
 
         for (const bucket of bucketsData) {
           if (bucket.operation !== op) continue;
@@ -992,6 +1000,7 @@
       document.getElementById('problemText').textContent = problem.replace('×', ' × ') + ' = ?';
       document.getElementById('progressBadge').textContent = `${appState.currentProblemIndex + 1} / ${appState.dailySet.length}`;
       document.getElementById('answerInput').value = '';
+      document.getElementById('answerInput').focus();
       document.getElementById('feedback').style.display = 'none';
     }
 
@@ -1052,33 +1061,39 @@
     function initializeCanvas() {
       canvas = document.getElementById('scratchCanvas');
       ctx = canvas.getContext('2d');
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * window.devicePixelRatio;
-      canvas.height = rect.height * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      
+      const setCanvasSize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 55; // subtract topbar height
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 2;
+      };
+      
+      setCanvasSize();
+      window.addEventListener('resize', setCanvasSize);
 
       canvas.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
         isDrawing = true;
-        const rect = canvas.getBoundingClientRect();
         ctx.beginPath();
-        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.moveTo(e.clientX, e.clientY - 55); // offset by topbar height
       });
 
       canvas.addEventListener('pointermove', (e) => {
+        e.preventDefault();
         if (!isDrawing) return;
-        const rect = canvas.getBoundingClientRect();
-        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+        ctx.lineTo(e.clientX, e.clientY - 55);
         ctx.stroke();
       });
 
-      canvas.addEventListener('pointerup', () => {
+      canvas.addEventListener('pointerup', (e) => {
+        e.preventDefault();
         isDrawing = false;
       });
 
-      canvas.addEventListener('pointerleave', () => {
+      canvas.addEventListener('pointerleave', (e) => {
+        e.preventDefault();
         isDrawing = false;
       });
 
@@ -1086,8 +1101,23 @@
     }
 
     function clearCanvas() {
-      const rect = canvas.getBoundingClientRect();
-      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function showScratchPad() {
+      document.getElementById('scratchOverlay').classList.add('active');
+      // Re-size canvas when overlay becomes visible
+      setTimeout(() => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 55;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 2;
+      }, 0);
+    }
+
+    function closeScratchPad() {
+      document.getElementById('scratchOverlay').classList.remove('active');
     }
 
     // ============================================================================
@@ -1105,22 +1135,8 @@
         });
       });
 
-      document.querySelectorAll('.number-pad button[data-num]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const input = document.getElementById('answerInput');
-          input.value += e.target.dataset.num;
-          input.focus();
-        });
-      });
-
-      document.getElementById('backspaceBtn').addEventListener('click', () => {
-        const input = document.getElementById('answerInput');
-        input.value = input.value.slice(0, -1);
-      });
-
-      document.getElementById('clearBtn').addEventListener('click', () => {
-        document.getElementById('answerInput').value = '';
-      });
+      document.getElementById('openScratchBtn').addEventListener('click', showScratchPad);
+      document.getElementById('closeScratchBtn').addEventListener('click', closeScratchPad);
 
       document.getElementById('checkAnswerBtn').addEventListener('click', submitAnswer);
       document.getElementById('answerInput').addEventListener('keydown', (e) => {
