@@ -454,6 +454,55 @@
         padding: 15px;
       }
     }
+
+    .mult-summary-list {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .mult-grid-wrapper {
+        display: none;
+      }
+      .mult-summary-list {
+        display: block;
+      }
+    }
+
+    .mult-summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      margin-bottom: 6px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .mult-summary-row-label {
+      font-weight: bold;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .mult-summary-row-progress {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .mult-summary-detail {
+      display: none;
+      grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+      gap: 4px;
+      padding: 10px;
+      margin-bottom: 6px;
+      background: #f0f0f0;
+      border-radius: 8px;
+    }
+
+    .mult-summary-detail.expanded {
+      display: grid;
+    }
   </style>
 </head>
 <body>
@@ -516,6 +565,7 @@
           <div class="mult-grid-wrapper">
             <div class="mult-grid" id="multGrid"></div>
           </div>
+          <div class="mult-summary-list" id="multSummaryList"></div>
         </div>
 
         <div class="storage-buttons">
@@ -726,6 +776,8 @@
 
     async function generateDailySet() {
       try {
+        const OPERATION_MODULE_MAP = { add: 'addition', sub: 'subtraction' };
+        
         const mult = await getMultiplicationFacts();
         const add = await getAddSubBuckets();
 
@@ -749,7 +801,7 @@
             appState.dailySet.push({ problemString: problem, sourceKey });
           } else if (allBuckets.length > 0) {
             const bucket = allBuckets[Math.floor(Math.random() * allBuckets.length)];
-            const problem = modules[bucket.operation].generate(bucket.key);
+            const problem = modules[OPERATION_MODULE_MAP[bucket.operation]].generate(bucket.key);
             if (problem) appState.dailySet.push({ problemString: problem, sourceKey: bucket.key });
           }
         }
@@ -757,7 +809,7 @@
         if (appState.dailySet.length < 10) {
           while (appState.dailySet.length < 10) {
             const bucket = allBuckets[Math.floor(Math.random() * allBuckets.length)];
-            const problem = modules[bucket.operation].generate(bucket.key);
+            const problem = modules[OPERATION_MODULE_MAP[bucket.operation]].generate(bucket.key);
             if (problem) appState.dailySet.push({ problemString: problem, sourceKey: bucket.key });
           }
         }
@@ -765,6 +817,7 @@
         appState.dailySet = appState.dailySet.slice(0, 10);
       } catch (e) {
         console.error('Error generating daily set:', e);
+        showStatusMessage('Failed to load today\'s math problems. Please refresh the page.');
       }
     }
 
@@ -1046,6 +1099,50 @@
       }
     }
 
+    function buildMultSummaryList(multFacts) {
+      const list = document.getElementById('multSummaryList');
+      list.innerHTML = '';
+
+      for (let table = 0; table <= 12; table++) {
+        const factsForTable = multFacts.filter(
+          f => f.operandA === table || f.operandB === table
+        );
+        const masteredCount = factsForTable.filter(f => f.status === 'mastered').length;
+        const totalCount = factsForTable.length;
+
+        const progressText = totalCount === 0
+          ? 'Not started yet'
+          : `${masteredCount} / ${totalCount} mastered`;
+
+        const row = document.createElement('div');
+        row.className = 'mult-summary-row';
+        row.innerHTML = `
+          <span class="mult-summary-row-label">× ${table}</span>
+          <span class="mult-summary-row-progress">${progressText}</span>
+        `;
+
+        const detail = document.createElement('div');
+        detail.className = 'mult-summary-detail';
+        factsForTable
+          .sort((a, b) => (a.operandA === table ? a.operandB : a.operandA) - (b.operandA === table ? b.operandB : b.operandA))
+          .forEach(f => {
+            const other = f.operandA === table ? f.operandB : f.operandA;
+            const cell = document.createElement('div');
+            cell.className = `mult-grid-cell ${f.status}`;
+            cell.textContent = `${table}×${other}`;
+            cell.style.fontSize = '9px';
+            detail.appendChild(cell);
+          });
+
+        row.addEventListener('click', () => {
+          detail.classList.toggle('expanded');
+        });
+
+        list.appendChild(row);
+        list.appendChild(detail);
+      }
+    }
+
     async function updateProgressView() {
       const mult = JSON.parse(localStorage.getItem('mult-facts-data') || '[]');
       const addsub = JSON.parse(localStorage.getItem('addsub-buckets-data') || '[]');
@@ -1081,6 +1178,9 @@
           grid.appendChild(cell);
         }
       }
+
+      // Build multiplication summary list for mobile
+      buildMultSummaryList(mult);
     }
 
     // ============================================================================
