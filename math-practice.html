@@ -362,14 +362,20 @@
       line-height: 1.6;
     }
 
+    .mult-grid-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 10px;
+    }
+
     .mult-grid {
       display: grid;
-      grid-template-columns: repeat(13, 1fr);
+      grid-template-columns: repeat(13, minmax(28px, 1fr));
       gap: 2px;
-      margin-top: 10px;
       background: #f0f0f0;
       padding: 10px;
       border-radius: 8px;
+      min-width: 460px;
     }
 
     .mult-grid-cell {
@@ -442,6 +448,12 @@
     .status-message.show {
       display: block;
     }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -501,7 +513,9 @@
         <div class="progress-section">
           <h3>Multiplication Tables</h3>
           <div class="progress-text" id="progressMultText"></div>
-          <div class="mult-grid" id="multGrid"></div>
+          <div class="mult-grid-wrapper">
+            <div class="mult-grid" id="multGrid"></div>
+          </div>
         </div>
 
         <div class="storage-buttons">
@@ -692,7 +706,7 @@
         }
 
         if (session && session.items.length > 0) {
-          appState.dailySet = session.items.map(i => i.problem);
+          appState.dailySet = session.items.map(i => ({ problemString: i.problem, sourceKey: i.sourceKey || i.problem }));
           appState.todayAnswers = session.items;
           appState.currentProblemIndex = session.items.length;
         } else {
@@ -731,11 +745,12 @@
             const tables = Array.from(availableTables);
             const table = tables[Math.floor(Math.random() * tables.length)];
             const problem = modules.multiplication.generate(table);
-            appState.dailySet.push(problem);
+            const sourceKey = problem;
+            appState.dailySet.push({ problemString: problem, sourceKey });
           } else if (allBuckets.length > 0) {
             const bucket = allBuckets[Math.floor(Math.random() * allBuckets.length)];
             const problem = modules[bucket.operation].generate(bucket.key);
-            if (problem) appState.dailySet.push(problem);
+            if (problem) appState.dailySet.push({ problemString: problem, sourceKey: bucket.key });
           }
         }
 
@@ -743,7 +758,7 @@
           while (appState.dailySet.length < 10) {
             const bucket = allBuckets[Math.floor(Math.random() * allBuckets.length)];
             const problem = modules[bucket.operation].generate(bucket.key);
-            if (problem) appState.dailySet.push(problem);
+            if (problem) appState.dailySet.push({ problemString: problem, sourceKey: bucket.key });
           }
         }
 
@@ -822,37 +837,62 @@
     // ANSWER EVALUATION & SCHEDULING
     // ============================================================================
 
+    function solveProblem(problemString) {
+      if (problemString.includes('×')) {
+        const [a, b] = problemString.split('×').map(Number);
+        return a * b;
+      } else if (problemString.includes('+')) {
+        const [a, b] = problemString.split('+').map(Number);
+        return a + b;
+      } else if (problemString.includes('-')) {
+        const [a, b] = problemString.split('-').map(Number);
+        return a - b;
+      }
+      return NaN;
+    }
+
     async function submitAnswer() {
       if (appState.currentProblemIndex >= appState.dailySet.length) return;
 
-      const problem = appState.dailySet[appState.currentProblemIndex];
+      const item = appState.dailySet[appState.currentProblemIndex];
+      const problem = item.problemString;
+      const sourceKey = item.sourceKey;
       const userAnswer = document.getElementById('answerInput').value.trim();
 
       if (!userAnswer) return;
 
-      const correct = await evaluateAnswer(problem, userAnswer);
-      await updateAnswerInSession(problem, userAnswer, correct);
+      try {
+        const correct = await evaluateAnswer(problem, userAnswer);
+        await updateAnswerInSession(problem, sourceKey, userAnswer, correct);
 
-      showFeedback(correct, problem);
-      appState.currentFeedback = correct;
+        showFeedback(correct, problem);
+        appState.currentFeedback = correct;
 
-      setTimeout(() => {
-        appState.currentFeedback = null;
-        document.getElementById('feedback').style.display = 'none';
-        advanceToNextProblem();
-      }, 1200);
+        setTimeout(() => {
+          appState.currentFeedback = null;
+          document.getElementById('feedback').style.display = 'none';
+          advanceToNextProblem();
+        }, 1200);
+      } catch (e) {
+        console.error('Error in submitAnswer:', e);
+        showFeedback(false, problem);
+        setTimeout(() => {
+          document.getElementById('feedback').style.display = 'none';
+          advanceToNextProblem();
+        }, 1200);
+      }
     }
 
     async function evaluateAnswer(problem, answer) {
       try {
-        const result = eval(problem.replace('×', '*'));
+        const result = solveProblem(problem);
         return parseInt(answer) === result;
       } catch {
         return false;
       }
     }
 
-    async function updateAnswerInSession(problem, answer, isCorrect) {
+    async function updateAnswerInSession(problem, sourceKey, answer, isCorrect) {
       try {
         const today = getTodayDateString();
         const sessionKey = `session-${today}`;
@@ -861,27 +901,24 @@
         session.items = session.items || [];
         session.items.push({
           problem: problem,
+          sourceKey: sourceKey,
           userAnswer: answer,
           correct: isCorrect,
           timestamp: Date.now()
         });
 
         await storageAPI.set(sessionKey, JSON.stringify(session));
-        await updateFactOrBucketData(problem, isCorrect);
+        await updateFactOrBucketData(problem, sourceKey, isCorrect);
       } catch (e) {
         console.error('Error updating session:', e);
       }
     }
 
-    async function updateFactOrBucketData(problem, isCorrect) {
-      if (problem.includes('×')) {
-        const parts = problem.split('×');
-        const a = parseInt(parts[0]);
-        const b = parseInt(parts[1]);
-        const key = `${Math.min(a, b)}×${Math.max(a, b)}`;
-
+    async function updateFactOrBucketData(problem, sourceKey, isCorrect) {
+      if (sourceKey.includes('×')) {
+        // Multiplication fact
         let facts = JSON.parse(localStorage.getItem('mult-facts-data') || '[]');
-        const fact = facts.find(f => f.key === key);
+        const fact = facts.find(f => f.key === sourceKey);
         if (fact) {
           if (isCorrect) {
             fact.correctStreak++;
@@ -901,35 +938,29 @@
           await storageAPI.set('mult-facts-data', JSON.stringify(facts));
         }
       } else {
+        // Addition/subtraction bucket
         const bucketsData = JSON.parse(localStorage.getItem('addsub-buckets-data') || '[]');
-        const op = problem.includes('-') ? 'sub' : 'add';
-
-        for (const bucket of bucketsData) {
-          if (bucket.operation !== op) continue;
-
-          const generated = modules[op].generate(bucket.key);
-          if (generated === problem || isRandomProblemFromBucket(problem, bucket)) {
-            if (isCorrect) {
-              bucket.correctStreak++;
-              bucket.timesCorrect++;
-            } else {
-              bucket.correctStreak = 0;
-              bucket.timesWrong++;
-            }
-            bucket.lastSeenDate = getTodayDateString();
-
-            if (bucket.status === 'new' && bucket.correctStreak >= 2) bucket.status = 'learning';
-            if (bucket.status === 'learning' && bucket.correctStreak >= 3) bucket.status = 'review';
-            if (bucket.status === 'review' && bucket.correctStreak >= 5) bucket.status = 'mastered';
-
-            bucket.nextDueDate = calculateNextDueDate(bucket.status, bucket.lastSeenDate);
-
-            if (!bucket.recentProblems) bucket.recentProblems = [];
-            bucket.recentProblems.push(problem);
-            if (bucket.recentProblems.length > 10) bucket.recentProblems.shift();
-
-            break;
+        const bucket = bucketsData.find(b => b.key === sourceKey);
+        
+        if (bucket) {
+          if (isCorrect) {
+            bucket.correctStreak++;
+            bucket.timesCorrect++;
+          } else {
+            bucket.correctStreak = 0;
+            bucket.timesWrong++;
           }
+          bucket.lastSeenDate = getTodayDateString();
+
+          if (bucket.status === 'new' && bucket.correctStreak >= 2) bucket.status = 'learning';
+          if (bucket.status === 'learning' && bucket.correctStreak >= 3) bucket.status = 'review';
+          if (bucket.status === 'review' && bucket.correctStreak >= 5) bucket.status = 'mastered';
+
+          bucket.nextDueDate = calculateNextDueDate(bucket.status, bucket.lastSeenDate);
+
+          if (!bucket.recentProblems) bucket.recentProblems = [];
+          bucket.recentProblems.push(problem);
+          if (bucket.recentProblems.length > 10) bucket.recentProblems.shift();
         }
 
         await storageAPI.set('addsub-buckets-data', JSON.stringify(bucketsData));
@@ -975,7 +1006,7 @@
       if (isCorrect) {
         fb.textContent = '✓ Correct!';
       } else {
-        const result = eval(problem.replace('×', '*'));
+        const result = solveProblem(problem);
         fb.textContent = `✗ Incorrect. Answer: ${result}`;
       }
       fb.style.display = 'block';
@@ -996,7 +1027,8 @@
     function updateUI() {
       if (appState.currentProblemIndex >= appState.dailySet.length) return;
 
-      const problem = appState.dailySet[appState.currentProblemIndex];
+      const item = appState.dailySet[appState.currentProblemIndex];
+      const problem = item.problemString;
       document.getElementById('problemText').textContent = problem.replace('×', ' × ') + ' = ?';
       document.getElementById('progressBadge').textContent = `${appState.currentProblemIndex + 1} / ${appState.dailySet.length}`;
       document.getElementById('answerInput').value = '';
